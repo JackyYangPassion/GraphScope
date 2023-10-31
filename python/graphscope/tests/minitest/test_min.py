@@ -242,6 +242,7 @@ def test_demo_with_default_session(ogbn_small_script):
     )
 
     # hyperparameter config.
+    # 此处训练后返回什么，如何应用在业务中？
     train_gcn(
         lg,
         node_type="paper",
