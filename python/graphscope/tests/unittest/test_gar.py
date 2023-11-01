@@ -20,6 +20,8 @@ import os
 
 import pytest
 
+# 测试从 GraphAr 中加载数据
+
 gar_test_repo_dir = os.path.expandvars("${GS_TEST_DIR}")
 
 
