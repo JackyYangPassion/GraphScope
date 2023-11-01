@@ -828,7 +828,7 @@ class Session(object):
 
     def _wrapper(self, dag_node: DAGNode) -> Union[DAGNode, App, Context, Graph, Any]:
         if self.eager():
-            return self.run(dag_node)
+            return self.run(dag_node) # 如果return self._config.session. == "eager" 则直接运行
         return dag_node
 
     def run(self, fetches):
