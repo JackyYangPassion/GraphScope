@@ -898,6 +898,7 @@ class Session(object):
             )
         elif self._cluster_type == types_pb2.HOSTS:
             # launch coordinator with hosts
+            logger.info("HostsClusterLauncher")
             self._launcher = HostsClusterLauncher(config=self._config)
         else:
             raise RuntimeError(
@@ -1222,8 +1223,8 @@ class Session(object):
             cypher_endpoint,
         ) = self._grpc_client.create_interactive_instance(
             object_id, schema_path, params, with_cypher
-        )
-        interactive_query = InteractiveQuery(graph, gremlin_endpoint, cypher_endpoint)
+        ) # client 创建 create_interactive_instance
+        interactive_query = InteractiveQuery(graph, gremlin_endpoint, cypher_endpoint) ## 下发查询
         self._interactive_instance_dict[object_id] = interactive_query
         graph._attach_interactive_instance(interactive_query)
         return interactive_query
