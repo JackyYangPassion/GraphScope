@@ -182,7 +182,7 @@ class GRPCClient(object):
             self._session_id, dag_def
         )
         response = self._grpc_utils.parse_runstep_responses(
-            self._stub.RunStep(runstep_requests)
+            self._stub.RunStep(runstep_requests) ## stub 是 gRPC 中核心概念，表示存根：和服务端实现的method 名称相同
         )
         if response.code != error_codes_pb2.OK:
             logger.error(

@@ -560,7 +560,7 @@ class Session(object):
         atexit.register(self.close)
         # create and connect session
         with CaptureKeyboardInterrupt(self.close):
-            self._connect()
+            self._connect()  # 调用 launcher，启动 Coordinator
 
         self._disconnected: bool = False
 
@@ -944,7 +944,7 @@ class Session(object):
                 (
                     self._engine_config,
                     pod_name_list,
-                ) = self._grpc_client.create_analytical_instance()
+                ) = self._grpc_client.create_analytical_instance() # 脚本语言 通过gRPC Client 向 Coordinator 发送创建GAE的请求
                 self._pod_name_list = list(pod_name_list)
         except Exception:
             self.close()

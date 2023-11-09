@@ -256,6 +256,7 @@ class GraphScopeOneServiceServicer(
                     error_code = error_codes_pb2.LEARNING_ENGINE_INTERNAL_ERROR
                     head, bodies = self._operation_executor.run_on_learning_engine(dag)
                 # run on coordinator
+                # 加载点边的 OP 是在哪里执行
                 elif run_dag_on == GSEngine.coordinator:
                     error_code = error_codes_pb2.COORDINATOR_INTERNAL_ERROR
                     head, bodies = self._operation_executor.run_on_coordinator(
