@@ -79,9 +79,16 @@ graph = (
         graph.add_vertices(os.path.join(prefix, "paper.csv"), "paper")
         )
 ```
+主要是看DAGNode 具体实现的 GraphDAGNode 组成的 op 链
+通过session::run 方法调用Coordinator gRPC 方法self._stub.RunStep(runstep_requests)
+核心： gRPC 执行 stub 远程方法 runStep 到各个组件：GAE/GIE/GLE 等
 
 
-
+1. GAE 注册创建空Graph
+2. add_vertices op 通过Debug 日志分析主要做两件事情  
+   a. 将第三方存储数据（file、HDFS、S3）等文件加载到 vinyard 参考方法 [Read_ORC](https://github.com/v6d-io/v6d/blob/main/python/vineyard/drivers/io/adaptors/read_orc.py)  
+   b. Graph 加载 VinYard 对应表数据到图中
+3. 单机加载2GB文件异常：hang流程，无报错
 ```python
 # 创建GIE进行交互式查询
 interactive = sess.interactive(graph)
