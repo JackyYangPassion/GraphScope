@@ -1,0 +1,1 @@
+{"vertex_progress":18,"edge_progress":15,"input_progress":{"1":{"type":"FILE","loaded_items":[{"name":"vertex_address.csv","last_modified":1681719811302,"checksum":"3248955469","offset":19}],"loading_item":null},"2":{"type":"FILE","loaded_items":[{"name":"edge_transaction.csv","last_modified":1681719072792,"checksum":"4097315882","offset":16}],"loading_item":null}}}
