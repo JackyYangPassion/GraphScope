@@ -73,6 +73,8 @@ Coordinator 直接看coordinator/gscoordinator/servicer/graphscope_one/service.p
 ```python
 # 客户端向Coordinator 发送RPC请求：创建图并加载图数据
 graph = sess.g()
+# 自定义节点 id 类型
+# graph = sess.g(oid_type="string",generate_eid=True)
 
 prefix = '/Users/yangjiaqi/.graphscope/datasets/ogbn_mag_small'
 graph = (
@@ -92,58 +94,6 @@ graph = (
 ```python
 # 创建GIE进行交互式查询
 interactive = sess.interactive(graph)
-edgeNum = interactive.execute("g.v().count()").one()
-print("edgeNum", edgeNum)
-```
-# 1 BUG-LIST
-**加载自定义数据GIE crash 掉**
-```python
-# Import the graphscope module
-import graphscope
-import os
-# 单机验证 加载图数据 from HDFS
-from graphscope.framework.loader import Loader
-from graphscope.client.session import get_default_session
-
-
-graphscope.set_option(show_log=True)  # enable logging
-graphscope.set_option(log_level='DEBUG')
-
-
-
-# 拉起简单的任务
-sess = graphscope.session( cluster_type='hosts',
-                            enabled_engines='interactive',
-                            vineyard_shared_mem='1Gi',
-                            num_workers=1)
-
-graph = sess.g(oid_type="string")
-
-prefix = '/workspaces/GraphScope/DataModel/FileStepParallelzation'
-
-
-
-graph = (
-        graph.add_vertices(os.path.join(prefix, "vertex_person.csv"), "person")
-             .add_vertices(os.path.join(prefix, "vertex_software.csv"), "software")
-             .add_edges(os.path.join(prefix, "edge_created.csv"), "created",src_label="person",dst_label="software")
-             .add_edges(os.path.join(prefix, "edge_knows.csv"), "knows",src_label="person",dst_label="person")
-        )
-
-
-interactive = sess.interactive(graph)
-
-# 执行此段逻辑 excutor crash 掉
 edgeNum = interactive.execute("g.E().count()").one()
 print("edgeNum", edgeNum)
-
-
-
 ```
-
-
-
-
-
-
-
