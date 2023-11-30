@@ -35,6 +35,26 @@ MutablePropertyFragment::~MutablePropertyFragment() {
   }
 }
 
+void MutablePropertyFragment::Clear() {
+  for (auto ptr : ie_) {
+    if (ptr != NULL) {
+      delete ptr;
+    }
+  }
+  for (auto ptr : oe_) {
+    if (ptr != NULL) {
+      delete ptr;
+    }
+  }
+  lf_indexers_.clear();
+  vertex_data_.clear();
+  ie_.clear();
+  oe_.clear();
+  vertex_label_num_ = 0;
+  edge_label_num_ = 0;
+  schema_.Clear();
+}
+
 void MutablePropertyFragment::IngestEdge(label_t src_label, vid_t src_lid,
                                          label_t dst_label, vid_t dst_lid,
                                          label_t edge_label, timestamp_t ts,
@@ -47,6 +67,8 @@ void MutablePropertyFragment::IngestEdge(label_t src_label, vid_t src_lid,
 }
 
 const Schema& MutablePropertyFragment::schema() const { return schema_; }
+
+Schema& MutablePropertyFragment::mutable_schema() { return schema_; }
 
 void MutablePropertyFragment::Serialize(const std::string& prefix) {
   std::string data_dir = prefix + "/data";
@@ -104,6 +126,14 @@ inline MutableCsrBase* create_csr(EdgeStrategy es,
     } else if (es == EdgeStrategy::kNone) {
       return new EmptyCsr<grape::EmptyType>();
     }
+  } else if (properties[0] == PropertyType::kBool) {
+    if (es == EdgeStrategy::kSingle) {
+      return new SingleMutableCsr<bool>();
+    } else if (es == EdgeStrategy::kMultiple) {
+      return new MutableCsr<bool>();
+    } else if (es == EdgeStrategy::kNone) {
+      return new EmptyCsr<bool>();
+    }
   } else if (properties[0] == PropertyType::kInt32) {
     if (es == EdgeStrategy::kSingle) {
       return new SingleMutableCsr<int>();
@@ -111,6 +141,14 @@ inline MutableCsrBase* create_csr(EdgeStrategy es,
       return new MutableCsr<int>();
     } else if (es == EdgeStrategy::kNone) {
       return new EmptyCsr<int>();
+    }
+  } else if (properties[0] == PropertyType::kUInt32) {
+    if (es == EdgeStrategy::kSingle) {
+      return new SingleMutableCsr<unsigned int>();
+    } else if (es == EdgeStrategy::kMultiple) {
+      return new MutableCsr<unsigned int>();
+    } else if (es == EdgeStrategy::kNone) {
+      return new EmptyCsr<unsigned int>();
     }
   } else if (properties[0] == PropertyType::kDate) {
     if (es == EdgeStrategy::kSingle) {
@@ -128,6 +166,14 @@ inline MutableCsrBase* create_csr(EdgeStrategy es,
     } else if (es == EdgeStrategy::kNone) {
       return new EmptyCsr<int64_t>();
     }
+  } else if (properties[0] == PropertyType::kUInt64) {
+    if (es == EdgeStrategy::kSingle) {
+      return new SingleMutableCsr<uint64_t>();
+    } else if (es == EdgeStrategy::kMultiple) {
+      return new MutableCsr<uint64_t>();
+    } else if (es == EdgeStrategy::kNone) {
+      return new EmptyCsr<uint64_t>();
+    }
   } else if (properties[0] == PropertyType::kDouble) {
     if (es == EdgeStrategy::kSingle) {
       return new SingleMutableCsr<double>();
@@ -136,7 +182,16 @@ inline MutableCsrBase* create_csr(EdgeStrategy es,
     } else if (es == EdgeStrategy::kNone) {
       return new EmptyCsr<double>();
     }
+  } else if (properties[0] == PropertyType::kFloat) {
+    if (es == EdgeStrategy::kSingle) {
+      return new SingleMutableCsr<float>();
+    } else if (es == EdgeStrategy::kMultiple) {
+      return new MutableCsr<float>();
+    } else if (es == EdgeStrategy::kNone) {
+      return new EmptyCsr<float>();
+    }
   }
+
   LOG(FATAL) << "not support edge strategy or edge data type";
   return nullptr;
 }

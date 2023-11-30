@@ -64,7 +64,7 @@ use prost::Message;
 
 use crate::error::IrError;
 use crate::plan::logical::{LogicalPlan, NodeId};
-use crate::plan::meta::{set_schema_from_json, KeyType};
+use crate::plan::meta::set_schema_from_json;
 use crate::plan::physical::AsPhysical;
 
 #[repr(i32)]
@@ -519,43 +519,32 @@ pub enum FfiKeyType {
     Column = 2,
 }
 
-impl From<FfiKeyType> for KeyType {
-    fn from(t: FfiKeyType) -> Self {
-        match t {
-            FfiKeyType::Entity => KeyType::Entity,
-            FfiKeyType::Relation => KeyType::Relation,
-            FfiKeyType::Column => KeyType::Column,
-        }
-    }
-}
-
-/// Query prop_name by given prop_id
+/// Query entity/relation/property name by given id
 #[no_mangle]
 pub extern "C" fn get_key_name(key_id: i32, key_type: FfiKeyType) -> FfiResult {
     use super::meta::STORE_META;
     if let Ok(meta) = STORE_META.read() {
         if let Some(schema) = &meta.schema {
             let key_name = match key_type {
-                FfiKeyType::Entity => schema
-                    .get_entity_name(key_id)
-                    .ok_or(FfiResult::new(
+                FfiKeyType::Entity => schema.get_entity_name(key_id).ok_or_else(|| {
+                    FfiResult::new(
                         ResultCode::TableNotExistError,
                         format!("entity label_id {:?} is not found", key_id),
-                    )),
-                FfiKeyType::Relation => schema
-                    .get_relation_name(key_id)
-                    .ok_or(FfiResult::new(
+                    )
+                }),
+                FfiKeyType::Relation => schema.get_relation_name(key_id).ok_or_else(|| {
+                    FfiResult::new(
                         ResultCode::TableNotExistError,
                         format!("relation label_id {:?} is not found", key_id),
-                    )),
-                FfiKeyType::Column => schema
-                    .get_column_name(key_id)
-                    .ok_or(FfiResult::new(
+                    )
+                }),
+                FfiKeyType::Column => schema.get_column_name(key_id).ok_or_else(|| {
+                    FfiResult::new(
                         ResultCode::ColumnNotExistError,
                         format!("prop_id {:?} is not found", key_id),
-                    )),
+                    )
+                }),
             };
-
             match key_name {
                 Ok(key_name) => {
                     let key_name_cstr = string_to_cstr(key_name.clone());
@@ -1024,6 +1013,11 @@ mod params {
         std::mem::forget(params);
 
         result
+    }
+
+    #[no_mangle]
+    pub extern "C" fn destroy_query_params(ptr: *const c_void) {
+        destroy_ptr::<pb::QueryParams>(ptr)
     }
 }
 

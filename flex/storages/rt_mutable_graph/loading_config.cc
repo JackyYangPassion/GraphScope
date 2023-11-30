@@ -202,6 +202,7 @@ static bool parse_vertex_files(
       std::string file_path = files_node[i].as<std::string>();
       if (!access_file(data_location, file_path)) {
         LOG(ERROR) << "vertex file - " << file_path << " file not found...";
+        return false;
       }
       std::filesystem::path path(file_path);
       files[label_id].emplace_back(std::filesystem::canonical(path));
@@ -404,6 +405,12 @@ static bool parse_bulk_load_config_file(const std::string& config_file,
                                         const Schema& schema,
                                         LoadingConfig& load_config) {
   YAML::Node root = YAML::LoadFile(config_file);
+  return parse_bulk_load_config_yaml(root, schema, load_config);
+}
+
+static bool parse_bulk_load_config_yaml(const YAML::Node& root,
+                                        const Schema& schema,
+                                        LoadingConfig& load_config) {
   std::string data_location;
   load_config.scheme_ = "file";  // default data source is file
   load_config.method_ = "init";
@@ -418,52 +425,56 @@ static bool parse_bulk_load_config_file(const std::string& config_file,
     }
     get_scalar(loading_config_node, "import_option", load_config.method_);
     auto format_node = loading_config_node["format"];
+    // default format is csv
     if (format_node) {
       get_scalar(format_node, "type", load_config.format_);
-      if (load_config.format_ == "csv") {
-        // set default delimiter before we parsing meta_data
-        load_config.metadata_[reader_options::DELIMITER] = "|";
-        load_config.metadata_[reader_options::HEADER_ROW] = "true";
-        load_config.metadata_[reader_options::QUOTING] = "false";
-        load_config.metadata_[reader_options::QUOTE_CHAR] = "\"";
-        load_config.metadata_[reader_options::DOUBLE_QUOTE] = "false";
-        load_config.metadata_[reader_options::ESCAPE_CHAR] = "\\";
-        load_config.metadata_[reader_options::ESCAPING] = "false";
-        load_config.metadata_[reader_options::BATCH_SIZE_KEY] =
-            std::to_string(reader_options::DEFAULT_BLOCK_SIZE);
-        load_config.metadata_[reader_options::BATCH_READER] = "false";
-        // put all key values in meta_data into metadata_
-        if (format_node["metadata"]) {
-          auto meta_data_node = format_node["metadata"];
-          if (!meta_data_node.IsMap()) {
-            LOG(ERROR) << "metadata should be a map";
-            return false;
-          }
-          for (auto it = meta_data_node.begin(); it != meta_data_node.end();
-               ++it) {
-            // override previous settings.
-            auto key = it->first.as<std::string>();
-            VLOG(1) << "Got metadata key: " << key
-                    << " value: " << it->second.as<std::string>();
-            if (reader_options::CSV_META_KEY_WORDS.find(key) !=
-                reader_options::CSV_META_KEY_WORDS.end()) {
-              if (key == reader_options::BATCH_SIZE_KEY) {
-                // special case for block size
-                // parse block size (MB, b, KB, B) to bytes
-                auto block_size_str = it->second.as<std::string>();
-                auto block_size = parse_block_size(block_size_str);
-                load_config.metadata_[reader_options::BATCH_SIZE_KEY] =
-                    std::to_string(block_size);
-              } else {
-                load_config.metadata_[key] = it->second.as<std::string>();
-              }
+    } else {
+      LOG(WARNING) << "No format is set, use default csv format";
+      load_config.format_ = "csv";
+    }
+    if (load_config.format_ == "csv") {
+      // set default delimiter before we parsing meta_data
+      load_config.metadata_[reader_options::DELIMITER] = "|";
+      load_config.metadata_[reader_options::HEADER_ROW] = "true";
+      load_config.metadata_[reader_options::QUOTING] = "false";
+      load_config.metadata_[reader_options::QUOTE_CHAR] = "\"";
+      load_config.metadata_[reader_options::DOUBLE_QUOTE] = "false";
+      load_config.metadata_[reader_options::ESCAPE_CHAR] = "\\";
+      load_config.metadata_[reader_options::ESCAPING] = "false";
+      load_config.metadata_[reader_options::BATCH_SIZE_KEY] =
+          std::to_string(reader_options::DEFAULT_BLOCK_SIZE);
+      load_config.metadata_[reader_options::BATCH_READER] = "false";
+      // put all key values in meta_data into metadata_
+      if (format_node["metadata"]) {
+        auto meta_data_node = format_node["metadata"];
+        if (!meta_data_node.IsMap()) {
+          LOG(ERROR) << "metadata should be a map";
+          return false;
+        }
+        for (auto it = meta_data_node.begin(); it != meta_data_node.end();
+             ++it) {
+          // override previous settings.
+          auto key = it->first.as<std::string>();
+          VLOG(1) << "Got metadata key: " << key
+                  << " value: " << it->second.as<std::string>();
+          if (reader_options::CSV_META_KEY_WORDS.find(key) !=
+              reader_options::CSV_META_KEY_WORDS.end()) {
+            if (key == reader_options::BATCH_SIZE_KEY) {
+              // special case for block size
+              // parse block size (MB, b, KB, B) to bytes
+              auto block_size_str = it->second.as<std::string>();
+              auto block_size = parse_block_size(block_size_str);
+              load_config.metadata_[reader_options::BATCH_SIZE_KEY] =
+                  std::to_string(block_size);
+            } else {
+              load_config.metadata_[key] = it->second.as<std::string>();
             }
           }
         }
-      } else {
-        LOG(ERROR) << "Only support csv format now";
-        return false;
       }
+    } else {
+      LOG(ERROR) << "Only support csv format now";
+      return false;
     }
   }
   if (load_config.method_ != "init") {
@@ -512,14 +523,33 @@ static bool parse_bulk_load_config_file(const std::string& config_file,
 }
 }  // namespace config_parsing
 
-LoadingConfig LoadingConfig::ParseFromYaml(const Schema& schema,
-                                           const std::string& yaml_file) {
+LoadingConfig LoadingConfig::ParseFromYamlFile(const Schema& schema,
+                                               const std::string& yaml_file) {
   LoadingConfig load_config(schema);
   if (!yaml_file.empty() && std::filesystem::exists(yaml_file)) {
     if (!config_parsing::parse_bulk_load_config_file(yaml_file, schema,
                                                      load_config)) {
       LOG(FATAL) << "Failed to parse bulk load config file: " << yaml_file;
     }
+  }
+  return load_config;
+}
+
+Result<LoadingConfig> LoadingConfig::ParseFromYamlNode(
+    const Schema& schema, const YAML::Node& yaml_node) {
+  LoadingConfig load_config(schema);
+  try {
+    if (!yaml_node.IsNull()) {
+      if (!config_parsing::parse_bulk_load_config_yaml(yaml_node, schema,
+                                                       load_config)) {
+        LOG(FATAL) << "Failed to parse bulk load config: ";
+      }
+    }
+  } catch (const YAML::Exception& e) {
+    return gs::Result<LoadingConfig>(
+        gs::Status(gs::StatusCode::InvalidImportFile,
+                   "Failed to parse yaml node: " + std::string(e.what())),
+        load_config);
   }
   return load_config;
 }
