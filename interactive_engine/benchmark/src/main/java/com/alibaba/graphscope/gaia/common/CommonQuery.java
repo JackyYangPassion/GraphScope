@@ -100,7 +100,8 @@ public class CommonQuery {
         String result = "";
         while (iterator.hasNext()) {
             count += 1;
-            result = String.format("%s\n%s", result, iterator.next().toString());
+            long num = iterator.next().getLong();
+            result = String.format("%s\n%s", result, num);
         }
         return Pair.of(count, result);
     }
