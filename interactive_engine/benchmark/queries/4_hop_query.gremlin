@@ -1,1 +1,1 @@
-g.V($vertexId).out().out().out().out().count()
+g.V().has('u_id', 'u_id', '$vertexId').out().out().out().out().count()
