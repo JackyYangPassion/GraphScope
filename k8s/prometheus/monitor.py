@@ -34,17 +34,21 @@ Request_summary = Summary(
 
 # metric log file in /var/log/graphscope/<random dir>/frontend/metric.log
 def check_log_file():
-    scope_dir = "/var/log/graphscope"
-    metric_name = "frontend/metric.log"
+    scope_dir = "/home/graphscope/.local/log/graphscope"
+    metric_name = "current/frontend.log"
     metric_log = ""
 
     # find metric.log file
     metric_log = None
     for directory in os.listdir(scope_dir):
-        log_file = os.path.join(scope_dir, directory, metric_name)
+        print("directory: ", directory)
+        log_file = os.path.join(scope_dir,metric_name)
+        print("log_file: ", log_file)
         if os.path.exists(log_file):
             metric_log = log_file
             break
+        
+    print("metric_log: ", metric_log)
     return metric_log
 
 
@@ -57,10 +61,17 @@ def parse_log_file(metric_log):
             if not line:
                 time.sleep(1)
                 continue
+            
+             # Only process lines that contain 'INFO MetricLog'
+            if 'INFO MetricLog' not in line:
+                print(line)
+                continue
 
             list_line = line.split("|")
             if len(list_line) != 5:
                 continue
+            
+            print("parse log Success")
             _, success, time_cost, _ = map(lambda x: x.strip(), list_line[1:])
             Request_summary.labels(success).observe(float(time_cost) / 1000)
 
