@@ -64,7 +64,7 @@ def parse_log_file(metric_log):
             
              # Only process lines that contain 'INFO MetricLog'
             if 'INFO MetricLog' not in line:
-                print(line)
+                #print(line)
                 continue
 
             list_line = line.split("|")
