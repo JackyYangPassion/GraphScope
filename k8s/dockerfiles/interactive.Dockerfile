@@ -11,6 +11,9 @@ ARG profile=release
 ENV profile=$profile
 COPY --chown=graphscope:graphscope . /home/graphscope/GraphScope
 
+# 将自定义的settings.xml复制到Maven的配置目录
+COPY --chown=graphscope:graphscope settings.xml /home/graphscope/.m2/settings.xml
+
 RUN cd /home/graphscope/GraphScope/ && \
     if [ "${CI}" = "true" ]; then \
         cp -r artifacts/interactive /home/graphscope/install; \
