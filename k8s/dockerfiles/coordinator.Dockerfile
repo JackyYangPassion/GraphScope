@@ -8,6 +8,13 @@ ARG CI=false
 
 COPY --chown=graphscope:graphscope . /home/graphscope/GraphScope
 
+# 创建pip配置文件，使用清华大学的镜像源
+RUN mkdir -p /home/graphscope/.pip && \
+    echo "[global]\n\
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple\n\
+[install]\n\
+trusted-host = pypi.tuna.tsinghua.edu.cn" > /home/graphscope/.pip/pip.conf
+
 RUN cd /home/graphscope/GraphScope/ && \
     if [ "${CI}" = "true" ]; then \
         cp -r artifacts/learning /home/graphscope/install; \
@@ -59,6 +66,9 @@ RUN pip3 install pip==20.3.4
 
 USER graphscope
 WORKDIR /home/graphscope
+
+# 复制构建阶段创建的pip配置文件到用户目录
+COPY --from=builder /home/graphscope/.pip/pip.conf /home/graphscope/.pip/pip.conf
 
 ENV PATH=${PATH}:/home/graphscope/.local/bin
 
