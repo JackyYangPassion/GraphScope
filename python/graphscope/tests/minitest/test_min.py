@@ -284,7 +284,8 @@ def test_modern_graph(parallel_executors, num_workers, threads_per_worker):
         )
         session = graphscope.session(cluster_type="hosts", num_workers=num_workers)
         g0 = load_modern_graph(session)
-        interactive0 = session.gremlin(g0)
+        interactive0 = session.interactive(g0)
+        
 
         # test pk scan
         query1 = "g.V().hasLabel('person').has('id', 1)"
@@ -311,11 +312,12 @@ def test_modern_graph(parallel_executors, num_workers, threads_per_worker):
 
         g1 = interactive0.subgraph("g.E()")
         interactive0.close()
-        interactive1 = session.gremlin(g1)
+        interactive1 = session.interactive(g1)
         subgraph_nodes = interactive1.execute(vquery).all().result()
         subgraph_edges = interactive1.execute(equery).all().result()
         logger.info("subgraph nodes = %s", subgraph_nodes)
         logger.info("subgraph edges = %s", subgraph_edges)
+        print("subgraph nodes = %s", subgraph_nodes)
         interactive1.close()
 
         assert make_nodes_set(nodes) == make_nodes_set(subgraph_nodes)

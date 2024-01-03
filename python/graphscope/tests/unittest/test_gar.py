@@ -20,8 +20,8 @@ import os
 
 import pytest
 
-gar_test_repo_dir = os.path.expandvars("${GS_TEST_DIR}")
-
+#gar_test_repo_dir = os.path.expandvars("${GS_TEST_DIR}")
+gar_test_repo_dir = "/home/graphscope/gstest"
 
 @pytest.mark.skip(reason="Issue 3162")
 def test_load_from_gar(graphscope_session):
