@@ -16,6 +16,7 @@
 # limitations under the License.
 #
 
+import logging
 import os
 import sys
 from unittest.mock import patch
@@ -33,6 +34,8 @@ from graphscope.dataset import load_modern_graph
 from graphscope.framework.loader import Loader
 
 
+logger = logging.getLogger("graphscope")
+
 @pytest.fixture(scope="module")
 def graphscope_session():
     graphscope.set_option(show_log=True)
@@ -44,8 +47,9 @@ def graphscope_session():
     yield sess
     sess.close()
 
-
-test_repo_dir = os.path.expandvars("${GS_TEST_DIR}")
+#os.system('export GS_TEST_DIR="/home/graphscope/gstest"')
+#test_repo_dir = os.path.expandvars("${GS_TEST_DIR}")
+test_repo_dir = "/home/graphscope/gstest"
 new_property_dir = os.path.join(test_repo_dir, "new_property", "v2_e2")
 property_dir = os.path.join(test_repo_dir, "property")
 
@@ -151,6 +155,8 @@ def twitter_e_1_1_1():
 
 
 def load_arrow_property_graph(session, directed=True):
+    
+    logger.info("load_arrow_property_graph: %s",{new_property_dir})
     return session.load_from(
         edges={
             "e0": [

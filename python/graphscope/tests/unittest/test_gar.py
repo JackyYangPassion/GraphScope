@@ -20,10 +20,8 @@ import os
 
 import pytest
 
-# 测试从 GraphAr 中加载数据
-
-gar_test_repo_dir = os.path.expandvars("${GS_TEST_DIR}")
-
+#gar_test_repo_dir = os.path.expandvars("${GS_TEST_DIR}")
+gar_test_repo_dir = "/home/graphscope/gstest"
 
 @pytest.mark.skip(reason="Issue 3162")
 def test_load_from_gar(graphscope_session):

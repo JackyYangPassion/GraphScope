@@ -18,6 +18,7 @@
 
 import itertools
 import os
+import logging
 
 import networkx as nx
 import numpy as np
@@ -43,6 +44,8 @@ from graphscope import wcc
 from graphscope.framework.app import AppAssets
 from graphscope.framework.errors import InvalidArgumentError
 
+
+logger = logging.getLogger("graphscope") 
 
 def context_to_np(
     ctx, selector={"node": "v.id", "r": "r"}, vertex_range=None, dtype=float
@@ -235,6 +238,7 @@ def test_other_app_on_undirected_graph(
 
     # louvain
     ctx = louvain(p2p_project_undirected_graph, min_progress=50, progress_tries=2)
+    ctx.output_to_client('/home/graphscope/result/louvain_result.csv', selector={'id': 'v.id', 'dist': 'r'})
     assert ctx is not None
     # simple_path
     ctx = is_simple_path(p2p_project_undirected_graph, [1, 10])
@@ -326,14 +330,24 @@ def test_voterank_on_flatten_ldbc_graph(ldbc_graph):
     df = ctx.to_dataframe({"id": "v.id", "result": "r"}).sort_values(by=["id"])
     assert len(df) == 2363
 
-
-def test_louvain_on_projected_graph(arrow_property_graph_undirected):
+# TODO: 验证结果准确性
+def test_louvain_on_projected_graph(arrow_property_graph_undirected,graphscope_session):
+    #心中有图
+    i = 0
     for v, e in itertools.product(["v0", "v1"], ["e0", "e1"]):
         g = arrow_property_graph_undirected.project(
             vertices={v: []}, edges={e: ["weight"]}
         )
+        interactive = graphscope_session.interactive(g)
+        edgeNum = interactive.execute("g.E().count()").one()
+        vertexNum = interactive.execute("g.V().count()").one()
+        
         ctx = louvain(g)
-        ctx.to_dataframe({"node": "v.id", "r": "r"})
+        df_com_louvain = ctx.to_dataframe({"node": "v.id", "r": "r"})
+        logger.info(df_com_louvain.head(100))
+        ctx.output_to_client(f'/home/graphscope/result/louvain_result{i}.csv', selector={'id': 'v.id', 'dist': 'r'})
+        i+=1
+        
 
 
 def test_pagerank_nx_on_projected_projected(ldbc_graph):
