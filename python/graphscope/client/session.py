@@ -560,7 +560,7 @@ class Session(object):
         atexit.register(self.close)
         # create and connect session
         with CaptureKeyboardInterrupt(self.close):
-            self._connect()
+            self._connect()  # 调用 launcher，启动 Coordinator
 
         self._disconnected: bool = False
 
@@ -828,7 +828,7 @@ class Session(object):
 
     def _wrapper(self, dag_node: DAGNode) -> Union[DAGNode, App, Context, Graph, Any]:
         if self.eager():
-            return self.run(dag_node)
+            return self.run(dag_node) # 如果return self._config.session. == "eager" 则直接运行
         return dag_node
 
     def run(self, fetches):
@@ -898,6 +898,7 @@ class Session(object):
             )
         elif self._cluster_type == types_pb2.HOSTS:
             # launch coordinator with hosts
+            logger.info("HostsClusterLauncher")
             self._launcher = HostsClusterLauncher(config=self._config)
         else:
             raise RuntimeError(
@@ -943,7 +944,7 @@ class Session(object):
                 (
                     self._engine_config,
                     pod_name_list,
-                ) = self._grpc_client.create_analytical_instance()
+                ) = self._grpc_client.create_analytical_instance() # 脚本语言 通过gRPC Client 向 Coordinator 发送创建GAE的请求
                 self._pod_name_list = list(pod_name_list)
         except Exception:
             self.close()
@@ -1222,8 +1223,8 @@ class Session(object):
             cypher_endpoint,
         ) = self._grpc_client.create_interactive_instance(
             object_id, schema_path, params, with_cypher
-        )
-        interactive_query = InteractiveQuery(graph, gremlin_endpoint, cypher_endpoint)
+        ) # client 创建 create_interactive_instance
+        interactive_query = InteractiveQuery(graph, gremlin_endpoint, cypher_endpoint) ## 下发查询
         self._interactive_instance_dict[object_id] = interactive_query
         graph._attach_interactive_instance(interactive_query)
         return interactive_query

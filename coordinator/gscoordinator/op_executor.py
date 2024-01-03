@@ -99,7 +99,7 @@ class OperationExecutor:
         # response
         response_head, response_bodies = None, []
         try:
-            responses = self.analytical_grpc_stub.RunStep(requests)
+            responses = self.analytical_grpc_stub.RunStep(requests) # coordinator 调用 GAE RPC 执行DAG的 op
             for response in responses:
                 if response.HasField("head"):
                     response_head = response

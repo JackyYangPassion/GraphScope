@@ -178,6 +178,8 @@ class LocalLauncher(AbstractLauncher):
             "Analytical engine is listening on %s", self._analytical_engine_endpoint
         )
 
+    # interactive = sess.interactive(graph)
+    # session 创建interactive 直接收Gremlin/Cypher
     def create_interactive_instance(
         self, object_id: int, schema_path: str, params: dict, with_cypher: bool
     ):
@@ -221,6 +223,8 @@ class LocalLauncher(AbstractLauncher):
             neo4j_disabled,
             params,
         ]
+
+        # 组建CMD 然后开启具体服务
         logger.info("Create GIE instance with command: %s", " ".join(cmd))
         self._interactive_port += 2 * num_workers + 2
         return self._popen_helper(cmd, cwd=os.getcwd(), env=env)

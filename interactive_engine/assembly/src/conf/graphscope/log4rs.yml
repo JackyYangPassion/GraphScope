@@ -7,6 +7,6 @@ appenders:
       pattern: "{d(%Y-%m-%d %H:%M:%S.%f)} {h({l:<5})} (({f}:{L})) [{T}] {m}{n}"
 
 root:
-  level: info
+  level: debug
   appenders:
     - stdout

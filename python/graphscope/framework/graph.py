@@ -1215,7 +1215,7 @@ class Graph(GraphInterface):
         if not self.loaded():
             raise RuntimeError("The graph is not loaded")
         return self._session._wrapper(
-            self._graph_node.add_vertices(vertices, label, properties, vid_field)
+            self._graph_node.add_vertices(vertices, label, properties, vid_field) # 直接运行此DAG
         )
 
     @apply_docstring(GraphDAGNode.add_edges)

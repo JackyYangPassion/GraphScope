@@ -1,0 +1,33 @@
+{
+  "vertices": [
+    {
+      "label": "address",
+      "input": {
+        "type": "file",
+        "path": "example/lpa/vertex_address.csv",
+        "format": "CSV",
+        "header": ["id", "address"],
+        "charset": "UTF-8",
+        "skipped_line": {
+          "regex": "(^#|^//).*"
+        }
+      },
+      "id":"id",
+      "null_values": ["NULL", "null", ""]
+    }
+  ],
+  "edges": [
+    {
+      "label": "transaction",
+      "source": ["from"],
+      "target": ["to"],
+      "input": {
+        "type": "file",
+        "path": "example/lpa/edge_transaction.csv",
+        "format": "CSV",
+        "header": ["from", "to", "weight"],
+        "charset": "UTF-8"
+      }
+    }
+  ]
+}

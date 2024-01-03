@@ -25,7 +25,7 @@ from graphscope import sssp
 from graphscope.dataset import load_ldbc
 from graphscope.framework.loader import Loader
 
-
+# 测试多个 Worker 进行图计算
 def p2p_property_graph(num_workers, directed=True):
     data_dir = os.path.expandvars("${GS_TEST_DIR}/property")
     graphscope.set_option(show_log=True)
