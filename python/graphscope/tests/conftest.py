@@ -59,6 +59,8 @@ def arrow_modern_graph(graphscope_session):
     graph = load_modern_graph(
         graphscope_session, prefix=f"{test_repo_dir}/modern_graph"
     )
+    logger.info("arrow_modern_graph schema: %s", graph.schema)
+    
     yield graph
     del graph
 
@@ -257,6 +259,7 @@ def load_arrow_property_graph(session, directed=True):
 @pytest.fixture(scope="module")
 def arrow_property_graph(graphscope_session):
     g = load_arrow_property_graph(graphscope_session, directed=True)
+    logger.info("arrow_property_graph schema: %s", g.schema)
     yield g
     del g
 
@@ -264,6 +267,7 @@ def arrow_property_graph(graphscope_session):
 @pytest.fixture(scope="module")
 def arrow_property_graph_undirected(graphscope_session):
     g = load_arrow_property_graph(graphscope_session, directed=False)
+    logger.info("arrow_property_graph_undirected schema: %s", g.schema)
     yield g
     del g
 
@@ -271,6 +275,7 @@ def arrow_property_graph_undirected(graphscope_session):
 @pytest.fixture(scope="module")
 def arrow_property_graph_directed(graphscope_session):
     g = load_arrow_property_graph(graphscope_session, directed=True)
+    logger.info("load_arrow_property_graph schema: %s", g.schema)
     yield g
     del g
 
@@ -367,6 +372,8 @@ def arrow_property_graph_only_from_efile(graphscope_session):
         generate_eid=False,
         retain_oid=True,
     )
+    
+    logger.info("arrow_property_graph_only_from_efile schema: %s", g.schema)
     yield g
     del g
 
@@ -379,6 +386,8 @@ def arrow_property_graph_lpa_u2i(graphscope_session):
     g = g.add_edges(
         f"{property_dir}/lpa_dataset/lpa_3000_e_0", "e0", ["weight"], "v0", "v1"
     )
+    
+    logger.info("arrow_property_graph_lpa_u2i schema: %s", g.schema)
     yield g
     del g
 
@@ -386,6 +395,7 @@ def arrow_property_graph_lpa_u2i(graphscope_session):
 @pytest.fixture(scope="module")
 def arrow_project_graph(arrow_property_graph):
     pg = arrow_property_graph.project(vertices={"v0": ["id"]}, edges={"e0": ["weight"]})
+    logger.info("arrow_project_graph schema: %s", pg.schema)
     yield pg
 
 
@@ -394,6 +404,8 @@ def arrow_project_undirected_graph(arrow_property_graph_undirected):
     pg = arrow_property_graph_undirected.project(
         vertices={"v0": ["id"]}, edges={"e0": ["weight"]}
     )
+    
+    logger.info("arrow_project_undirected_graph schema: %s", pg.schema)
     yield pg
 
 
@@ -407,9 +419,60 @@ def p2p_property_graph(graphscope_session):
         src_label="person",
         dst_label="person",
     )
+    
+    logger.info("p2p_property_graph schema: %s", g.schema)
+    yield g
+    del g
+    
+@pytest.fixture(scope="module")
+def p2p_property_graph_louvain(graphscope_session):
+    g = graphscope_session.g(oid_type="string",generate_eid=False, retain_oid=True, directed=False)
+    g = (
+        g.add_vertices(Loader(f"file:///{test_repo_dir}/p2p_v.csv")
+                           ,label="person"
+                           ,vid_field="id"
+              )
+             .add_edges(Loader(f"file:///{test_repo_dir}/p2p_e.csv")
+                    ,label="knows"
+                    ,src_label="person"
+                    ,dst_label="person"
+                    ,src_field='src'
+                    ,dst_field='dst'
+                    ,properties=[('weight', 'double')]
+              )
+             
+            
+    )
+    
+    logger.info("p2p_property_graph_louvain schema: %s", g.schema)
     yield g
     del g
 
+
+@pytest.fixture(scope="module")
+def louvain_graphs(graphscope_session):
+    g = graphscope_session.g(oid_type="string",generate_eid=False, retain_oid=True, directed=False)
+    g = (
+        g.add_vertices(Loader(f"file:///home/graphscope/vertex_address.csv")
+                           ,label="person"
+                           ,vid_field="id"
+              )
+             .add_edges(Loader(f"file:///home/graphscope/edge_transaction.csv")
+                    ,label="knows"
+                    ,src_label="person"
+                    ,dst_label="person"
+                    ,src_field='from'
+                    ,dst_field='to'
+                    ,properties=[('weight', 'double')]
+              )
+             
+            
+    )
+    
+    logger.info("louvain_graphs schema: %s", g.schema)
+    yield g
+    del g
+    
 
 @pytest.fixture(scope="module")
 def p2p_multi_property_graph(graphscope_session):
@@ -434,6 +497,7 @@ def p2p_graph_from_pandas(graphscope_session):
     g = graphscope_session.g(generate_eid=False, retain_oid=False, directed=False)
     g = g.add_vertices(df_v, "person")
     g = g.add_edges(df_e, label="knows", src_label="person", dst_label="person")
+    
     yield g
     del g
 
@@ -450,6 +514,8 @@ def p2p_property_graph_string(graphscope_session):
         src_label="person",
         dst_label="person",
     )
+    
+    logger.info("p2p_property_graph_string schema %s", g.schema)
     yield g
     del g
 
@@ -466,6 +532,7 @@ def p2p_property_graph_int32(graphscope_session):
         src_label="person",
         dst_label="person",
     )
+    logger.info("p2p_property_graph_int32 schema %s", g.schema)
     yield g
     del g
 
@@ -482,6 +549,8 @@ def p2p_property_graph_uint32_vid(graphscope_session):
         src_label="person",
         dst_label="person",
     )
+    
+    logger.info("p2p_property_graph_uint32_vid schema %s", g.schema)
     yield g
     del g
 
@@ -496,6 +565,8 @@ def p2p_property_graph_undirected(graphscope_session):
         src_label="person",
         dst_label="person",
     )
+    
+    logger.info("p2p_property_graph_undirected schema %s", g.schema)
     yield g
     del g
 
@@ -512,6 +583,8 @@ def p2p_property_graph_undirected_string(graphscope_session):
         src_label="person",
         dst_label="person",
     )
+    
+    logger.info("p2p_property_graph_undirected_string schema %s", g.schema)
     yield g
     del g
 
@@ -598,6 +671,8 @@ def p2p_property_graph_undirected_compact(graphscope_session):
         directed=False,
         compact_edges=True,
     )
+    
+    logger.info("p2p_property_graph_undirected_compact schema %s", g.schema)
     yield g
     del g
 
@@ -632,6 +707,8 @@ def p2p_property_graph_undirected_perfect_hash(graphscope_session):
         compact_edges=False,
         use_perfect_hash=True,
     )
+    
+    logger.info("p2p_property_graph_undirected_perfect_hash schema %s", g.schema)
     yield g
     del g
 
