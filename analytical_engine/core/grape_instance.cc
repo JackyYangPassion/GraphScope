@@ -225,7 +225,7 @@ bl::result<std::string> GrapeInstance::loadApp(const rpc::GSParams& params) {
   BOOST_LEAF_AUTO(lib_path, params.Get<std::string>(rpc::APP_LIBRARY_PATH));
 
   auto app = std::make_shared<AppEntry>(app_name, lib_path);
-  VLOG(1) << "Loading application, application name: " << app_name
+  VLOG(1) << "New logic Loading application, application name: " << app_name
           << " , library path: " << lib_path;
   BOOST_LEAF_CHECK(app->Init());
   BOOST_LEAF_CHECK(object_manager_.PutObject(app));
