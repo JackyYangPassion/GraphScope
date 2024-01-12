@@ -397,7 +397,7 @@ fi
 
 pushd "${ENGINE_HOME}"/build
 
-get_test_data
+#get_test_data
 
 for app in "${ldbc_apps[@]}"; do
   run ${np} ./run_app --vfile "${test_dir}"/p2p-31.v --efile "${test_dir}"/p2p-31.e --application "${app}" --out_prefix ./test_output --sssp_source=6 --sssp_target=10 --bfs_source=6

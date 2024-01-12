@@ -238,7 +238,13 @@ def test_other_app_on_undirected_graph(
 
     # louvain
     ctx = louvain(p2p_project_undirected_graph, min_progress=50, progress_tries=2)
+    df = ctx.to_dataframe({"node": "v.id", "r": "r"})
+    community_num = len(df["r"].unique())
+    print("community_num: ", community_num)  # it's not a fixed number
+    
     ctx.output_to_client('/home/graphscope/result/louvain_result.csv', selector={'id': 'v.id', 'dist': 'r'})
+    
+    assert community_num == 103
     assert ctx is not None
     # simple_path
     ctx = is_simple_path(p2p_project_undirected_graph, [1, 10])

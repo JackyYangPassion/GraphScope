@@ -53,9 +53,10 @@ function get_test_data {
 }
 
 function test_analytical {
-	get_test_data
+	#get_test_data
 	info "Testing analytical on local"
-	"${GS_SOURCE_DIR}"/analytical_engine/test/app_tests.sh --test_dir "${GS_TEST_DIR}"
+	echo ${GS_TEST_DIR}
+	/workspaces/GraphScope/analytical_engine/test/app_tests.sh --test_dir "${GS_TEST_DIR}"
 }
 
 function test_analytical-java {
