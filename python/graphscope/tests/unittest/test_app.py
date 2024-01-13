@@ -355,7 +355,26 @@ def test_louvain_on_projected_graph(arrow_property_graph_undirected,graphscope_s
         logger.info(df_com_louvain.head(100))
         ctx.output_to_client(f'/home/graphscope/result/louvain_result{i}.csv', selector={'id': 'v.id', 'dist': 'r'})
         i+=1
+
+
+
+# TODO: 验证p2p 数据集合：性能，结果准确性
+def test_louvain_on_mydata_graph(louvain_graphs,graphscope_session):
+    #心中有图
+    g = louvain_graphs.project(vertices={'person': []}, edges={'knows': ['weight']})
+    interactive = graphscope_session.interactive(g)
+    edgeNum = interactive.execute("g.E().count()").one()
+    vertexNum = interactive.execute("g.V().count()").one()
         
+    ctx = louvain(g, min_progress=4, progress_tries=2)
+    print("min_progress: ", 4) 
+    df_com_louvain = ctx.to_dataframe({"node": "v.id", "r": "r"})
+    df = ctx.to_dataframe({"node": "v.id", "r": "r"})
+    community_num = len(df["r"].unique())
+    print("community_num: ", community_num) 
+    
+    logger.info(df_com_louvain.head(100))
+    ctx.output_to_client(f'/home/graphscope/result/mydata_louvain_result.csv', selector={'id': 'v.id', 'dist': 'r'})        
 
 
 def test_pagerank_nx_on_projected_projected(ldbc_graph):

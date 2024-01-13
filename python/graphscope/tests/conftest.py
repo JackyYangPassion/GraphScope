@@ -255,6 +255,33 @@ def load_arrow_property_graph(session, directed=True):
 
 
 @pytest.fixture(scope="module")
+def louvain_graphs(graphscope_session):
+    g = graphscope_session.g(oid_type="string",generate_eid=False, retain_oid=True, directed=False)
+    g = (
+        g.add_vertices(Loader(f"file:///home/graphscope/vertex_address.csv")
+                           ,label="person"
+                           ,vid_field="id"
+              )
+             .add_edges(Loader(f"file:///home/graphscope/edge_transaction.csv")
+                    ,label="knows"
+                    ,src_label="person"
+                    ,dst_label="person"
+                    ,src_field='from'
+                    ,dst_field='to'
+                    ,properties=[('weight', 'double')]
+              )
+             
+            
+    )
+    
+    logger.info("louvain_graphs schema: %s", g.schema)
+    yield g
+    del g
+
+
+
+
+@pytest.fixture(scope="module")
 def arrow_property_graph(graphscope_session):
     g = load_arrow_property_graph(graphscope_session, directed=True)
     yield g
