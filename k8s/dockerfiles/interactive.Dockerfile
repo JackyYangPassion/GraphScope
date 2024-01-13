@@ -11,6 +11,9 @@ ARG profile=release
 ENV profile=$profile
 COPY --chown=graphscope:graphscope . /home/graphscope/GraphScope
 
+# 将自定义的settings.xml复制到Maven的配置目录
+COPY --chown=graphscope:graphscope ./settings.xml /home/graphscope/.m2/settings.xml
+
 RUN cd /home/graphscope/GraphScope/ && \
     if [ "${CI}" = "true" ]; then \
         cp -r artifacts/interactive /home/graphscope/install; \
@@ -84,6 +87,13 @@ COPY ./k8s/utils/graphctl.py /usr/local/bin/graphctl.py
 
 RUN sudo chmod +x /opt/graphscope/bin/*
 RUN sudo chmod a+wrx /tmp /var/tmp
+
+# 创建pip配置文件，使用清华大学的镜像源
+RUN mkdir -p /home/graphscope/.pip && \
+    echo "[global]\n\
+index-url = https://mirrors.aliyun.com/pypi/simple/\n\
+[install]\n\
+trusted-host = mirrors.aliyun.com" > /home/graphscope/.pip/pip.conf
 
 RUN python3 -m pip install --no-cache-dir vineyard vineyard-io --user
 
